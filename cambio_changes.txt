@@ -1,0 +1,5 @@
+  
+1) bug-candidate profile setting (change
+2) edit icon on candidateprofilesetting activity,and change add more experience and add more education
+3) candidateswipepagemodel.java
+4) candidateProfilesettingactivity

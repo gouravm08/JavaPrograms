@@ -1,0 +1,155 @@
+ private void Expaired_jobs() {
+
+        jobDetailModels=new ArrayList<>();
+        Dialog dialog = Utils.initProgressDialog(ExpireJobActivity.this);
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, Const.URL.getjobposts, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                //Log.e("active_jobs","active_jobs_responce"+response);
+                Utils.E("active_jobs_responce"+response);
+                dialog.dismiss();
+                jobDetailModels.clear();
+                try {
+                    JSONObject jsonObject=new JSONObject(response);
+                    if (jsonObject.getBoolean("success")==true){
+                        Utils.T(ExpireJobActivity.this, "" + jsonObject.getString("message"));
+                        JSONArray company_dataArray=jsonObject.getJSONArray("data");
+                        for(int i=0;i<company_dataArray.length();i++){
+                            JSONObject company_dataobject=company_dataArray.getJSONObject(i);
+
+                            int id=company_dataobject.getInt("id");
+                            String user_id=company_dataobject.getString("user_id");
+                            String company_id=company_dataobject.getString("company_id");
+                            String job_title=company_dataobject.getString("job_title");
+                            String job_description=company_dataobject.getString("job_description");
+                            String job_type=company_dataobject.getString("job_type");
+                            String qualification=company_dataobject.getString("qualification");
+                            String shift=company_dataobject.getString("shift");
+                            String cabs=company_dataobject.getString("cabs");
+                            String from_annaul_ctc=company_dataobject.getString("from_annaul_ctc");
+                            String to_annual_ctc=company_dataobject.getString("to_annual_ctc");
+                            String company_industry_location=company_dataobject.getString("company_industry_location");
+                            String company_lat=company_dataobject.getString("company_lat");
+                            String company_lng=company_dataobject.getString("company_lng");
+                            String process=company_dataobject.getString("process");
+                            String job_role=company_dataobject.getString("job_role");
+                            String notice_period=company_dataobject.getString("notice_period");
+                            int from_age=company_dataobject.getInt("from_age");
+                            int to_age=company_dataobject.getInt("to_age");
+                            String gender=company_dataobject.getString("gender");
+                            String no_of_positions=company_dataobject.getString("no_of_positions");
+                            String allow_disabled=company_dataobject.getString("allow_disabled");
+                            String interview_panel_ids=company_dataobject.getString("interview_panel_ids");
+
+
+                            String last_date_to_apply=company_dataobject.getString("last_date_to_apply");
+                            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                            Date date=dateFormat.parse(last_date_to_apply);
+                            SimpleDateFormat dateFormat2 = new SimpleDateFormat("dd MMM yyyy");
+                            String changedDate_last_date_to_apply = dateFormat2.format(date);
+                            Utils.E("last_date_post"+changedDate_last_date_to_apply);
+
+                            String date_of_post=company_dataobject.getString("date_of_post");
+                            SimpleDateFormat dateFormat3 = new SimpleDateFormat("yyyy-MM-dd");
+                            Date datepost=dateFormat3.parse(date_of_post);
+                            SimpleDateFormat dateFormat4 = new SimpleDateFormat("dd MMM yyyy");
+                            String changedDate_date_of_post = dateFormat4.format(datepost);
+                            Utils.E("last_date_post"+changedDate_date_of_post);
+
+
+                            String special_comments=company_dataobject.getString("special_comments");
+                            String commitments=company_dataobject.getString("commitments");
+                            String screening_questions=company_dataobject.getString("screening_questions");
+                            String mode_of_interview=company_dataobject.getString("mode_of_interview");
+                            String createdAt=company_dataobject.getString("createdAt");
+                            String updatedAt=company_dataobject.getString("updatedAt");
+
+
+                            jobDetailModels.add(new JobDetailModel(24,job_title,changedDate_date_of_post,changedDate_last_date_to_apply));
+
+                        }
+
+                        JobDetailAdapter jobDetailAdapter = new JobDetailAdapter(ExpireJobActivity.this, jobDetailModels);
+                            recyclerViewdetail.setAdapter(jobDetailAdapter);
+                            jobDetailAdapter.notifyDataSetChanged();
+
+                    }
+
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+
+                NetworkResponse networkResponse = error.networkResponse;
+                String errorMessage = "Unknown error";
+                if (networkResponse == null) {
+                    if (error.getClass().equals(TimeoutError.class)) {
+                        errorMessage = "Request timeout";
+                        Utils.T(ExpireJobActivity.this, errorMessage + "please check Internet connection");
+                    } else if (error.getClass().equals(NoConnectionError.class)) {
+                        errorMessage = "Failed to connect server";
+                    }
+                } else {
+                    String result = new String(networkResponse.data);
+                    try {
+                        JSONObject response = new JSONObject(result);
+                        String status = response.getString("status");
+                        String message = response.getString("message");
+                        Log.e("Error Status", status);
+                        Log.e("Error Message", message);
+                        if (networkResponse.statusCode == 404) {
+                            errorMessage = "Resource not found";
+                        } else if (networkResponse.statusCode == 401) {
+                            errorMessage = message + " Please login again";
+                        } else if (networkResponse.statusCode == 400) {
+                            errorMessage = message + " Check your inputs";
+                        } else if (networkResponse.statusCode == 500) {
+                            errorMessage = message + " Something is getting wrong";
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+                Log.i("Error", errorMessage);
+                error.printStackTrace();
+
+            }
+        })
+        {
+            @Override
+            public String getCacheKey() {
+                return super.getCacheKey();
+            }
+
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                HashMap<String, String> stringStringHashMapHeader = new HashMap<>();
+                stringStringHashMapHeader.put("x-access-token", UserDataHelper.getInstance().getList().get(0).getUserToken());
+
+                return stringStringHashMapHeader;
+            }
+
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+                HashMap<String,String> setrateparam = new HashMap<>();
+
+                setrateparam.put("user_id", UserDataHelper.getInstance().getList().get(0).getUserId());
+                setrateparam.put("status",status);
+                return setrateparam ;
+            }
+        };
+        RequestQueue requestQueue = Volley.newRequestQueue(this);
+        requestQueue.add(stringRequest);
+        stringRequest.setRetryPolicy(new DefaultRetryPolicy(
+                2500,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+    }
